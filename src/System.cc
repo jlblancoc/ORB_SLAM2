@@ -25,6 +25,9 @@
 #include <thread>
 #include <pangolin/pangolin.h>
 #include <iomanip>
+#include <mrpt/system/CTimeLogger.h>
+
+static mrpt::system::CTimeLogger timlog;
 
 namespace ORB_SLAM2
 {
@@ -115,6 +118,8 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
 cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp)
 {
+	mrpt::system::CTimeLoggerEntry tle(timlog,"TrackStereo");
+
     if(mSensor!=STEREO)
     {
         cerr << "ERROR: you called TrackStereo but input sensor was not set to STEREO." << endl;
@@ -217,6 +222,8 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
 
 cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
 {
+	mrpt::system::CTimeLoggerEntry tle(timlog,"TrackMonocular");
+
     if(mSensor!=MONOCULAR)
     {
         cerr << "ERROR: you called TrackMonocular but input sensor was not set to Monocular." << endl;

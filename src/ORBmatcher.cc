@@ -29,6 +29,9 @@
 
 #include<stdint-gcc.h>
 
+#include <mrpt/system/CTimeLogger.h>
+static mrpt::system::CTimeLogger timelog;
+
 using namespace std;
 
 namespace ORB_SLAM2
@@ -44,7 +47,9 @@ ORBmatcher::ORBmatcher(float nnratio, bool checkOri): mfNNratio(nnratio), mbChec
 
 int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoints, const float th)
 {
-    int nmatches=0;
+	mrpt::system::CTimeLoggerEntry tme(timelog, "ORBmatcher.SearchByProjection1");
+
+	int nmatches=0;
 
     const bool bFactor = th!=1.0;
 
@@ -158,7 +163,9 @@ bool ORBmatcher::CheckDistEpipolarLine(const cv::KeyPoint &kp1,const cv::KeyPoin
 
 int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPointMatches)
 {
-    const vector<MapPoint*> vpMapPointsKF = pKF->GetMapPointMatches();
+	mrpt::system::CTimeLoggerEntry tme(timelog, "ORBmatcher.SearchByBoW");
+
+	const vector<MapPoint*> vpMapPointsKF = pKF->GetMapPointMatches();
 
     vpMapPointMatches = vector<MapPoint*>(F.N,static_cast<MapPoint*>(NULL));
 
@@ -289,6 +296,8 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPoin
 
 int ORBmatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const vector<MapPoint*> &vpPoints, vector<MapPoint*> &vpMatched, int th)
 {
+	mrpt::system::CTimeLoggerEntry tme(timelog, "ORBmatcher.SearchByProjection2");
+
     // Get Calibration Parameters for later projection
     const float &fx = pKF->fx;
     const float &fy = pKF->fy;

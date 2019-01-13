@@ -62,9 +62,13 @@
 
 #include "ORBextractor.h"
 
+#include <iostream>
 #include <mrpt/system/CTimeLogger.h>
 
-static mrpt::system::CTimeLogger timelog;
+static mrpt::system::CTimeLogger timelog(true, "ORB_extractor",
+                                         true /*keep history*/);
+
+static mrpt::system::CTimeLoggerSaveAtDtor stats_dumper(timelog);
 
 using namespace cv;
 using namespace std;
@@ -610,7 +614,7 @@ ORBextractor::DistributeOctTree(const vector<cv::KeyPoint> &vToDistributeKeys,
 			    make_pair(n1.vKeys.size(), &lNodes.front()));
 			lNodes.front().lit = lNodes.begin();
 		  }
-        }
+		}
 		if (n2.vKeys.size() > 0) {
 			lNodes.push_front(n2);
 		  if (n2.vKeys.size() > 1) {
@@ -637,7 +641,7 @@ ORBextractor::DistributeOctTree(const vector<cv::KeyPoint> &vToDistributeKeys,
 			    make_pair(n4.vKeys.size(), &lNodes.front()));
 			lNodes.front().lit = lNodes.begin();
 		  }
-		}
+        }
 
 		lit = lNodes.erase(lit);
 		continue;
@@ -983,7 +987,7 @@ static void computeDescriptors(const Mat &image, vector<KeyPoint> &keypoints,
 void ORBextractor::operator()(InputArray _image, InputArray _mask,
                               vector<KeyPoint> &_keypoints,
                               OutputArray _descriptors) {
-  mrpt::system::CTimeLoggerEntry tle(timelog, "ORBextractor.op()");
+  mrpt::system::CTimeLoggerEntry tle(timelog, "ORBextractor_op()");
 
   if (_image.empty())
 	return;
@@ -991,12 +995,20 @@ void ORBextractor::operator()(InputArray _image, InputArray _mask,
   Mat image = _image.getMat();
   assert(image.type() == CV_8UC1);
 
-  // Pre-compute the scale pyramid
-  ComputePyramid(image);
+  {
+	mrpt::system::CTimeLoggerEntry tle2(timelog, "ORBextractor_op().pyramid");
+	// Pre-compute the scale pyramid
+	ComputePyramid(image);
+  }
 
   vector<vector<KeyPoint>> allKeypoints;
-  ComputeKeyPointsOctTree(allKeypoints);
-  // ComputeKeyPointsOld(allKeypoints);
+  {
+	mrpt::system::CTimeLoggerEntry tle2(timelog, "ORBextractor_op().detect");
+	ComputeKeyPointsOctTree(allKeypoints);
+	// ComputeKeyPointsOld(allKeypoints);
+  }
+
+  mrpt::system::CTimeLoggerEntry tle2(timelog, "ORBextractor_op().descriptors");
 
   Mat descriptors;
 
